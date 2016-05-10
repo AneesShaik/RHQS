@@ -1,0 +1,29 @@
+sudo yum install wget
+wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+wget http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+rpm -Uvh remi-release-7.rpm epel-release-latest-7.noarch.rpm
+yum-config-manager --enable remi-php70
+yum update
+php -v
+php --version
+yum install php
+yum install php-mbstring
+yum install -y php-devel
+yum install -y php-mysql
+yum install -y php-pdo
+yum install -y php-pear
+pear install Log
+yum install -y pcre-devel
+systemctl restart httpd
+yum install -y php-pecl-apc
+systemctl restart httpd
+yum install mysql-devel
+curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+python get-pip.py
+yum install python-devel
+yum install gcc -y
+pip install psycopg2
+yum install libffi-devel libffi
+yum install openssl-devel -y
+pip install ansible==1.9.4
+
