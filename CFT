@@ -1,0 +1,1710 @@
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+	"Description" : "Standard 7 layered infrastructure template with Wordpress",
+	"Parameters" : {
+		"001AvailabilityZone1" : {
+			"Description" : "Pick an AvailabilityZone for Subnets(DONT PICK SAME AZs for Both AvailabilityZones)",
+			"Type" : "AWS::EC2::AvailabilityZone::Name"
+		},
+		"002AvailabilityZone2" : {
+			"Description" : "Pick an AvailabilityZone for Subnets(DONT PICK SAME AZs for Both AvailabilityZones)",
+			"Type" : "AWS::EC2::AvailabilityZone::Name"
+		},
+		"003VPCCIDR" : {
+			"Description" : "Give the VPC CIDR range to create VPC",
+			"Type" : "String",
+			"Default" : "10.72.0.0/16"
+		},
+		"004VPCTag" : {
+			"Description" : "Give the VPC Tag Value",
+			"Type" : "String",
+			"Default" : "standard-vpc"
+		},
+		"005VPCDnsSupport" : {
+			"Type" : "String",
+			"Default" : "TRUE",
+			"AllowedValues" : ["TRUE", "FALSE"],
+			"Description" : "Enter TRUE or FALSE. Default is True."
+		},
+		"006VPCDnsHostnames" : {
+			"Type" : "String",
+			"Default" : "TRUE",
+			"AllowedValues" : ["TRUE", "FALSE"],
+			"Description" : "Enter TRUE or FALSE. Default is True."
+		},
+		"007IGWTag" : {
+			"Description" : "Give the InternetGateway Tag Value",
+			"Type" : "String",
+			"Default" : "standard-igw"
+		},
+		"008ExternalELBAZ1CIDR" : {
+			"Description" : "Give the ExternalELBAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.102.0/24"
+		},
+		"009ExternalELBAZ1Tag" : {
+			"Description" : "Give the ExternalELBAZ1 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-xelb-1a-pub"
+		},
+		"010ExternalELBAZ2CIDR" : {
+			"Description" : "Give the ExternalELBAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.118.0/24"
+		},
+		"011ExternalELBAZ2Tag" : {
+			"Description" : "Give the ExternalELBAZ2 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-xelb-1b-pub"
+		},
+		"012DMZAZ1CIDR" : {
+			"Description" : "Give the DMZAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.104.0/24"
+		},
+		"013DMZAZ1Tag" : {
+			"Description" : "Give the DMZAZ1 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-dmz-1a-pub"
+		},
+		"014DMZAZ2CIDR" : {
+			"Description" : "Give the DMZAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.120.0/24"
+		},
+		"015DMZAZ2Tag" : {
+			"Description" : "Give the DMZAZ2 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-dmz-1b-pub"
+		},
+		"016WebAZ1CIDR" : {
+			"Description" : "Give the InternalELBAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.100.0/24"
+		},
+		"017WebAZ1Tag" : {
+			"Description" : "Give the InternalELBAZ1 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-web-1a-pvt"
+		},
+		"018WebAZ2CIDR" : {
+			"Description" : "Give the InternalELBAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.116.0/24"
+		},
+		"019WebAZ2Tag" : {
+			"Description" : "Give the InternalELBAZ2 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-web-1b-pvt"
+		},
+		"020InternalELBAZ1CIDR" : {
+			"Description" : "Give the InternalELBAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.108.0/24"
+		},
+		"021InternalELBAZ1Tag" : {
+			"Description" : "Give the InternalELBAZ1 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-ielb-1a-pvt"
+		},
+		"022InternalELBAZ2CIDR" : {
+			"Description" : "Give the InternalELBAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.124.0/24"
+		},
+		"023InternalELBAZ2Tag" : {
+			"Description" : "Give the InternalELBAZ2 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-ielb-1b-pvt"
+		},
+		"024AppAZ1CIDR" : {
+			"Description" : "Give the AppAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.106.0/24"
+		},
+		"025AppAZ1Tag" : {
+			"Description" : "Give the AppAZ1 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-app-1a-pvt"
+		},
+		"026AppAZ2CIDR" : {
+			"Description" : "Give the AppAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.122.0/24"
+		},
+		"027AppAZ2Tag" : {
+			"Description" : "Give the AppAZ2 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-app-1b-pvt"
+		},
+		"028DBAZ1CIDR" : {
+			"Description" : "Give the DBAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.107.0/24"
+		},
+		"029DBAZ1Tag" : {
+			"Description" : "Give the DBAZ1 Tag Value Subnet",
+			"Type" : "String",
+			"Default" : "standard-db-1a-pvt"
+		},
+		"030DBAZ2CIDR" : {
+			"Description" : "Give the DBAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.123.0/24"
+		},
+		"031DBAZ2Tag" : {
+			"Description" : "Give the DBAZ2 Tag Value Subnet",
+			"Type" : "String",
+			"Default" : "standard-db-1b-pvt"
+		},
+		"032AdminAZ1CIDR" : {
+			"Description" : "Give the AdminAZ1 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.0.0/24"
+		},
+		"033AdminAZ1Tag" : {
+			"Description" : "Give the AdminAZ1 Tag Value Subnet",
+			"Type" : "String",
+			"Default" : "standard-admin-1a-pvt"
+		},
+		"034AdminAZ2CIDR" : {
+			"Description" : "Give the AdminAZ2 CIDR range to create Subnet",
+			"Type" : "String",
+			"Default" : "10.72.16.0/24"
+		},
+		"035AdminAZ2Tag" : {
+			"Description" : "Give the AdminAZ2 Tag Value to Subnet",
+			"Type" : "String",
+			"Default" : "standard-admin-1b-pvt"
+		},
+		"036DomainName" : {
+			"Description" : "A domain name of your choice",
+			"Type" : "String",
+			"Default" : "ec2.internal"
+		},
+		"037DomainNameServer" : {
+			"Description" : "Give the IP (IPv4) address of a domain name server",
+			"Type" : "String",
+			"Default" : "AmazonProvidedDNS"
+		},
+		"038WordpressAMI" : {
+			"Description" : "Give Existing Wordpress AMI-ID",
+			"Type" : "String",
+			"Default" : ""
+		},
+		"039WordpressKeyPair" : {
+			"Type" : "AWS::EC2::KeyPair::KeyName",
+			"Default" : "",
+			"Description" : "Public/private key pairs allow you to securely connect to your instance after it launches"
+		},
+		"40WordpressInstanceType" : {
+			"Description" : "Amazon EC2 instance type for the Wordpress Instances.",
+			"Type" : "String",
+			"Default" : "t2.medium",
+			"AllowedValues" : [
+				"t2.small",
+				"t2.medium",
+				"t2.micro",
+				"m1.small",
+				"m1.medium",
+				"m1.large",
+				"m1.xlarge",
+				"m3.medium",
+				"m3.large"
+
+			]
+		},
+		"043SGCIDR" : {
+			"Description" : "Provide your home/office IP for Amazon EC2 instance SecurityGroup CIDR for security",
+			"Type" : "String",
+			"Default" : ""
+		},
+		"DBClass" : {
+            "Description" : "Database instance class",
+            "Type" : "String",
+            "Default" : "db.t2.small",
+            "AllowedValues" : [ "db.t1.micro", "db.m1.small", "db.m1.medium", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge", "db.m3.medium", "db.m3.large", "db.m3.xlarge", "db.m3.2xlarge", "db.m4.large", "db.m4.xlarge", "db.m4.2xlarge", "db.m4.4xlarge", "db.m4.10xlarge", "db.r3.large", "db.r3.xlarge", "db.r3.2xlarge", "db.r3.4xlarge", "db.r3.8xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge", "db.cr1.8xlarge", "db.t2.micro", "db.t2.small", "db.t2.medium", "db.t2.large"]
+,
+            "ConstraintDescription" : "must select a valid database instance type."
+        },
+
+        "DBName" : {
+            "Default": "wordpressdb",
+			"Description" : "The WordPress database name",
+			"Type": "String",
+			"MinLength": "1",
+			"MaxLength": "64",
+			"AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+			"ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+		},
+		"DBUser": {
+			"NoEcho": "true",
+			"Description": "The database admin account username",
+			"Type": "String",
+			"MinLength": "1",
+			"MaxLength": "16",
+			"AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+			"ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+		},
+		"DBPassword": {
+			"NoEcho": "true",
+			"Description": "The database admin account password",
+			"Type": "String",
+			"MinLength": "8",
+			"MaxLength": "41",
+			"AllowedPattern": "[a-zA-Z0-9]*",
+			"ConstraintDescription": "must contain only alphanumeric characters."
+		}
+	},
+	"Resources" : {
+		"vpc" : {
+			"Type" : "AWS::EC2::VPC",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "003VPCCIDR"
+				},
+				"EnableDnsSupport" : {
+					"Ref" : "005VPCDnsSupport"
+				},
+				"EnableDnsHostnames" : {
+					"Ref" : "006VPCDnsHostnames"
+				},
+				"InstanceTenancy" : "default",
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "004VPCTag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"igw" : {
+			"Type" : "AWS::EC2::InternetGateway",
+			"Properties" : {
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "007IGWTag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"AttachGateway" : {
+			"Type" : "AWS::EC2::VPCGatewayAttachment",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"InternetGatewayId" : {
+					"Ref" : "igw"
+				}
+			}
+		},
+		"VPCS3Endpoint" : {
+			"Type" : "AWS::EC2::VPCEndpoint",
+			"Properties" : {
+				"PolicyDocument" : {
+					"Version" : "2012-10-17",
+					"Statement" : [{
+							"Effect" : "Allow",
+							"Principal" : "*",
+							"Action" : ["s3:*"],
+							"Resource" : "*"
+						}
+					]
+				},
+				"RouteTableIds" : [{
+						"Ref" : "PrivateToNatGateway"
+					}, {
+						"Ref" : "PublicIGWRT"
+					}, {
+						"Ref" : "PrivateToNatGateway2"
+					}
+				],
+				"ServiceName" : {
+					"Fn::Join" : ["", ["com.amazonaws.", {
+								"Ref" : "AWS::Region"
+							}, ".s3"]]
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				}
+			}
+		},
+		"DMZAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "012DMZAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "013DMZAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"DMZAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "014DMZAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "015DMZAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"ExternalELBAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "008ExternalELBAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "009ExternalELBAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"ExternalELBAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "010ExternalELBAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "011ExternalELBAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"WebAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "016WebAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "017WebAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"WebAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "018WebAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "019WebAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"InternalELBAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "020InternalELBAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "021InternalELBAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"InternalELBAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "022InternalELBAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "023InternalELBAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"DBAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "028DBAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "029DBAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"DBAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "030DBAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "031DBAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"DBSubGroup" : {
+			"Type" : "AWS::RDS::DBSubnetGroup",
+			"Properties" : {
+				"DBSubnetGroupDescription" : "7layer DB subnets",
+				"SubnetIds" : [{
+						"Ref" : "DBAZ1"
+					}, {
+						"Ref" : "DBAZ2"
+					}
+				],
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "db_subnet_group"]]
+						}
+					}
+				]
+			}
+		},
+		"RDSDBInstance": {
+			"Type": "AWS::RDS::DBInstance",
+			"Properties": {
+				"AllocatedStorage": "100",
+				"DBInstanceClass": "db.t2.small",
+				"Engine": "MySQL",
+				"Iops": "1000",
+				"DBSubnetGroupName": {
+					"Ref": "DBSubGroup"
+				},
+				"MasterUsername": {
+					"Ref": "DBUser"
+				},
+				"MasterUserPassword": {
+					"Ref": "DBPassword"
+				}
+			}
+		},
+		"AppAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "024AppAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "025AppAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"AppAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "026AppAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "027AppAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"AdminAZ1" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "032AdminAZ1CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "001AvailabilityZone1"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "033AdminAZ1Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"AdminAZ2" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : {
+					"Ref" : "034AdminAZ2CIDR"
+				},
+				"AvailabilityZone" : {
+					"Ref" : "002AvailabilityZone2"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [" ", [{
+										"Ref" : "035AdminAZ2Tag"
+									}, " "]]
+						}
+					}
+				]
+			}
+		},
+		"NatGatewayEIP" : {
+			"Type" : "AWS::EC2::EIP",
+			"Properties" : {
+				"Domain" : "vpc"
+			}
+		},
+		"NatGatewayEIP2" : {
+			"Type" : "AWS::EC2::EIP",
+			"Properties" : {
+				"Domain" : "vpc"
+			}
+		},
+		"NatGateway" : {
+			"DependsOn" : "igw",
+			"Type" : "AWS::EC2::NatGateway",
+			"Properties" : {
+				"AllocationId" : {
+					"Fn::GetAtt" : ["NatGatewayEIP", "AllocationId"]
+				},
+				"SubnetId" : {
+					"Ref" : "DMZAZ1"
+				}
+			}
+		},
+		"NatGateway2" : {
+			"DependsOn" : "igw",
+			"Type" : "AWS::EC2::NatGateway",
+			"Properties" : {
+				"AllocationId" : {
+					"Fn::GetAtt" : ["NatGatewayEIP2", "AllocationId"]
+				},
+				"SubnetId" : {
+					"Ref" : "DMZAZ2"
+				}
+			}
+		},
+		"PublicIGWRT" : {
+			"Type" : "AWS::EC2::RouteTable",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "pub-rt"]]
+						}
+					}
+				]
+			}
+		},
+		"PublicIGWRoute" : {
+			"Type" : "AWS::EC2::Route",
+			"DependsOn" : "igw",
+			"Properties" : {
+				"RouteTableId" : {
+					"Ref" : "PublicIGWRT"
+				},
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"GatewayId" : {
+					"Ref" : "igw"
+				}
+			}
+		},
+		"PrivateToNGW1" : {
+			"Type" : "AWS::EC2::Route",
+			"Properties" : {
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway"
+				},
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"NatGatewayId" : {
+					"Ref" : "NatGateway"
+				}
+			}
+		},
+		"PrivateToNGW2" : {
+			"Type" : "AWS::EC2::Route",
+			"Properties" : {
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway2"
+				},
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"NatGatewayId" : {
+					"Ref" : "NatGateway2"
+				}
+			}
+		},
+		"ExternalELBAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "ExternalELBAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PublicIGWRT"
+				}
+			}
+		},
+		"ExternalELBAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "ExternalELBAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PublicIGWRT"
+				}
+			}
+		},
+		"DMZAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DMZAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PublicIGWRT"
+				}
+			}
+		},
+		"DMZAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DMZAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PublicIGWRT"
+				}
+			}
+		},
+		"PrivateToNatGateway" : {
+			"Type" : "AWS::EC2::RouteTable",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "priv-rt"]]
+						}
+					}
+				]
+			}
+		},
+		"PrivateToNatGateway2" : {
+			"Type" : "AWS::EC2::RouteTable",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "priv-rt"]]
+						}
+					}
+				]
+			}
+		},
+		"WebAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "WebAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway"
+				}
+			}
+		},
+		"WebAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "WebAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway2"
+				}
+			}
+		},
+		"InternalELBAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "InternalELBAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway"
+				}
+			}
+		},
+		"InternalELBAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "InternalELBAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway2"
+				}
+			}
+		},
+		"AppAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AppAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway"
+				}
+			}
+		},
+		"AppAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AppAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway2"
+				}
+			}
+		},
+		"DBAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DBAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway"
+				}
+			}
+		},
+		"DBAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DBAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway2"
+				}
+			}
+		},
+		"AdminAZ1association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AdminAZ1"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway"
+				}
+			}
+		},
+		"AdminAZ2association" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AdminAZ2"
+				},
+				"RouteTableId" : {
+					"Ref" : "PrivateToNatGateway2"
+				}
+			}
+		},
+		"Route53Internal" : {
+			"Type" : "AWS::Route53::HostedZone",
+			"Properties" : {
+				"Name" : {
+					"Fn::Join" : ["-", [{
+								"Ref" : "004VPCTag"
+							}, "PrivatetoNAT"]]
+				},
+				"VPCs" : [{
+						"VPCId" : {
+							"Ref" : "vpc"
+						},
+						"VPCRegion" : {
+							"Ref" : "AWS::Region"
+						}
+					}
+				]
+			}
+		},
+		"DHCPOptions" : {
+			"Type" : "AWS::EC2::DHCPOptions",
+			"Properties" : {
+				"DomainName" : {
+					"Ref" : "036DomainName"
+				},
+				"DomainNameServers" : [{
+						"Ref" : "037DomainNameServer"
+					}
+				],
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "dhcp"]]
+						}
+					}
+				]
+			}
+		},
+		"VPCDHCPOptionsAssociation" : {
+			"Type" : "AWS::EC2::VPCDHCPOptionsAssociation",
+			"Properties" : {
+				"DhcpOptionsId" : {
+					"Ref" : "DHCPOptions"
+				},
+				"VpcId" : {
+					"Ref" : "vpc"
+				}
+			}
+		},
+		"WordpressSg" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "Wordpress-sg"]]
+						}
+					}
+				],
+				"GroupDescription" : "Enable access (8080)"
+			}
+		},
+
+		"ExternalELBSG" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "eELB-sg"]]
+						}
+					}
+				],
+				"GroupDescription" : "Enable access (80,8080)"
+			}
+		},
+
+		"WordpressInboundRule1" : {
+			"Type" : "AWS::EC2::SecurityGroupIngress",
+			"Properties" : {
+				"IpProtocol" : "tcp",
+				"FromPort" : "8080",
+				"ToPort" : "8080",
+				"GroupId" : {
+					"Fn::GetAtt" : [
+						"WordpressSg",
+						"GroupId"
+					]
+				},
+				"SourceSecurityGroupId" : {
+					"Ref" : "ExternalELBSG"
+				}
+			}
+		},
+		"WordpressInboundRule2" : {
+			"Type" : "AWS::EC2::SecurityGroupIngress",
+			"Properties" : {
+				"IpProtocol" : "tcp",
+				"FromPort" : "22",
+				"ToPort" : "22",
+				"GroupId" : {
+					"Fn::GetAtt" : [
+						"WordpressSg",
+						"GroupId"
+					]
+				}
+			}
+		},
+		"eELBInboundRule1" : {
+			"Type" : "AWS::EC2::SecurityGroupIngress",
+			"Properties" : {
+				"IpProtocol" : "tcp",
+				"FromPort" : "8080",
+				"ToPort" : "8080",
+				"GroupId" : {
+					"Fn::GetAtt" : [
+						"ExternalELBSG",
+						"GroupId"
+					]
+				},
+				"CidrIp" : {
+					"Ref" : "043SGCIDR"
+				}
+			}
+		},
+		"eELBInboundRule2" : {
+			"Type" : "AWS::EC2::SecurityGroupIngress",
+			"Properties" : {
+				"IpProtocol" : "tcp",
+				"FromPort" : "80",
+				"ToPort" : "80",
+				"GroupId" : {
+					"Fn::GetAtt" : [
+						"ExternalELBSG",
+						"GroupId"
+					]
+				},
+				"CidrIp" : {
+					"Ref" : "043SGCIDR"
+				}
+
+			}
+		},
+		"NetworkAcl" : {
+			"Type" : "AWS::EC2::NetworkAcl",
+			"Properties" : {
+				"VpcId" : {
+					"Ref" : "vpc"
+				},
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : ["-", [{
+										"Ref" : "004VPCTag"
+									}, "nacl"]]
+						}
+					}
+				]
+			}
+		},
+		"OutBoundTCPNetworkAclEntry1" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "100",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "20",
+					"To" : "21"
+				}
+			}
+		},
+		"OutBoundTCPNetworkAclEntry2" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "110",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "23",
+					"To" : "23"
+				}
+			}
+		},
+		"OutBoundTCPNetworkAclEntry3" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "120",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "110",
+					"To" : "110"
+				}
+			}
+		},
+		"OutBoundTCPNetworkAclEntry4" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "130",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "143",
+					"To" : "143"
+				}
+			}
+		},
+		"OutBoundTCPNetworkAclEntry5" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "140",
+				"RuleAction" : "deny",
+				"Protocol" : "17",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "161",
+					"To" : "161"
+				}
+			}
+		},
+		"OutBoundUDPNetworkAclEntry6" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "32766",
+				"RuleAction" : "allow",
+				"Protocol" : "-1",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "0",
+					"To" : "0"
+				}
+			}
+		},
+		"InboundTCPNetworkAclEntry1" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "100",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "20",
+					"To" : "21"
+				}
+			}
+		},
+		"InboundTCPNetworkAclEntry2" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "110",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "23",
+					"To" : "23"
+				}
+			}
+		},
+		"InboundTCPNetworkAclEntry3" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "120",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "110",
+					"To" : "110"
+				}
+			}
+		},
+		"InboundTCPNetworkAclEntry4" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "130",
+				"RuleAction" : "deny",
+				"Protocol" : "6",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "143",
+					"To" : "143"
+				}
+			}
+		},
+		"InboundUDPNetworkAclEntry5" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "140",
+				"RuleAction" : "deny",
+				"Protocol" : "17",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "161",
+					"To" : "162"
+				}
+			}
+		},
+		"InboundTCPNetworkAclEntry6" : {
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : {
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				},
+				"RuleNumber" : "32766",
+				"RuleAction" : "allow",
+				"Protocol" : "-1",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : {
+					"Code" : "",
+					"Type" : ""
+				},
+				"PortRange" : {
+					"From" : "0",
+					"To" : "0"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation1" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "ExternalELBAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation2" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "ExternalELBAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation3" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DMZAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation4" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DMZAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation5" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "WebAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation6" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "WebAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation7" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "InternalELBAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation8" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "InternalELBAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation9" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AppAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation10" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AppAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation11" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DBAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation12" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "DBAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation13" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AdminAZ1"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"SubnetNetworkAclAssociation14" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : {
+				"SubnetId" : {
+					"Ref" : "AdminAZ2"
+				},
+				"NetworkAclId" : {
+					"Ref" : "NetworkAcl"
+				}
+			}
+		},
+		"WordpressAdminRole" : {
+			"Type" : "AWS::IAM::Role",
+			"Properties" : {
+				"AssumeRolePolicyDocument" : {
+					"Version" : "2012-10-17",
+					"Statement" : [{
+							"Effect" : "Allow",
+							"Principal" : {
+								"Service" : ["ec2.amazonaws.com"]
+							},
+							"Action" : ["sts:AssumeRole"]
+						}
+					]
+				},
+				"Path" : "/"
+			}
+		},
+		"WordpressAdminIamInstanceProfile" : {
+			"Type" : "AWS::IAM::InstanceProfile",
+			"Properties" : {
+				"Path" : "/",
+				"Roles" : [{
+						"Ref" : "WordpressAdminRole"
+					}
+				]
+			}
+		},
+
+		"WordpressAdminPolicy" : {
+			"Type" : "AWS::IAM::Policy",
+			"Properties" : {
+				"PolicyName" : "WordpressAdmin",
+				"PolicyDocument" : {
+					"Version" : "2012-10-17",
+					"Statement" : [{
+							"Effect" : "Allow",
+							"Action" : "*",
+							"Resource" : "*"
+						}
+					]
+				},
+				"Roles" : [{
+						"Ref" : "WordpressAdminRole"
+					}
+				]
+			}
+		},
+		"Wordpress" : {
+			"Type" : "AWS::EC2::Instance",
+			"Properties" : {
+				"ImageId" : {
+					"Ref" : "038WordpressAMI"
+				},
+				"InstanceType" : {
+					"Ref" : "40WordpressInstanceType"
+				},
+				"SubnetId" : {
+					"Ref" : "AdminAZ1"
+				},
+				"SecurityGroupIds" : [{
+						"Ref" : "WordpressSg"
+					}
+				],
+				"Tags" : [{
+						"Key" : "Name",
+						"Value" : "standard-Wordpress-instance-az1-01"
+					}
+				],
+				"KeyName" : {
+					"Ref" : "039WordpressKeyPair"
+				},
+				"IamInstanceProfile" : {
+					"Ref" : "WordpressAdminIamInstanceProfile"
+				},
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["", ["#!/bin/bash \n",
+							"yum update -y \n",
+							"yum install wget -y \n",
+							"yum install git -y \n",
+							"curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \n",
+							"python get-pip.py \n",
+							"yum install postgresql-devel -y \n",
+							"yum install python-devel -y \n",
+							"yum install gcc -y \n",
+							"pip install psycopg2 \n",
+							"yum install libffi-devel libffi -y \n",
+							"yum install openssl-devel -y \n",
+							"pip install ansible==1.9.4 \n",
+							"yum install mysql-devel -y \n",
+							"pip install MySQL-python \n"
+
+						]]
+					}
+				}
+			}
+		},
+		"elasticloadbalancer" : {
+			"Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Properties" : {
+				"Subnets" : [{
+						"Ref" : "ExternalELBAZ1"
+					}
+				],
+				"Instances" : [{
+						"Ref" : "Wordpress"
+					}
+				],
+				"SecurityGroups" : [{
+						"Ref" : "ExternalELBSG"
+					}
+				],
+
+				"Listeners" : [{
+						"LoadBalancerPort" : "80",
+						"InstancePort" : "8080",
+						"Protocol" : "HTTP"
+					}
+				],
+				"HealthCheck" : {
+					"Target" : "TCP:8080",
+					"HealthyThreshold" : "3",
+					"UnhealthyThreshold" : "5",
+					"Interval" : "5",
+					"Timeout" : "2"
+				},
+				"ConnectionDrainingPolicy" : {
+					"Enabled" : "true",
+					"Timeout" : "300"
+				}
+			}
+		}
+	},
+	"Outputs" : {
+		"vpcid" : {
+			"Value" : {
+				"Ref" : "vpc"
+			},
+			"Description" : "VPC ID of newly created VPC"
+		},
+		"WordpressDashbordURL" : {
+			"Value" : {
+				"Fn::Join" : ["", ["http://", {
+							"Fn::GetAtt" : ["elasticloadbalancer", "DNSName"]
+						}, ""]]
+			},
+			"Description" : "WordPress URL"
+		}
+	}
+}
