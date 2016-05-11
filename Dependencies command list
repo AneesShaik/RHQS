@@ -9,6 +9,7 @@ php --version
 yum install php
 yum install php-mbstring
 yum install -y php-devel
+yum install -y httpd-devel
 yum install -y php-mysql
 yum install -y php-pdo
 yum install -y php-pear
