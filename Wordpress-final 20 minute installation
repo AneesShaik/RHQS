@@ -5,7 +5,7 @@ sudo rpm -Uvh remi-release-7.rpm epel-release-latest-7.noarch.rpm
 sudo yum-config-manager --enable remi-php70
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
 sudo python get-pip.py
-sudo yum install python-devel
+sudo yum install python-devel -y
 sudo yum install gcc -y
 sudo yum install libffi-devel libffi
 sudo yum install openssl-devel -y
